@@ -1,6 +1,8 @@
 public class RoomEdge {
     RoomCell cell_to_connect;
-    RoomEdge(RoomCell c){
+    int weight;
+    RoomEdge(RoomCell c, int w){
         cell_to_connect = c;
+        weight = w;
     }
 }
