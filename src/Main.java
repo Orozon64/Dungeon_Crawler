@@ -3,8 +3,10 @@ import java.util.Scanner;
 import java.util.ArrayList;
 public class Main {
     static ArrayList<RoomCell> cells = new ArrayList<>();
+
     static int Dijkstra(RoomCell start, RoomCell finish){
         ArrayList <RoomCell> Q = cells;
+        ArrayList <RoomCell> path;
         for(RoomCell inf_setter : Q){
             if(inf_setter == start){
                 inf_setter.dis = 0;
@@ -48,7 +50,8 @@ public class Main {
         char content;
         int exit_x;
         int exit_y;
-
+        int player_x;
+        int player_y;
         ArrayList<Integer> dangers_x = new ArrayList<>();
         ArrayList<Integer> dangers_y = new ArrayList<>();
         ArrayList<Integer> treasures_x = new ArrayList<>();
@@ -86,6 +89,12 @@ public class Main {
                 exit_x = rand.nextInt(room_width);
                 exit_y = rand.nextInt(room_height);
             }
+            player_x = rand.nextInt(room_width);
+            player_y = rand.nextInt(room_width);
+            while((treasures_x.contains(player_x) && treasures_y.contains(player_y)) || (dangers_x.contains(player_x) && dangers_y.contains(player_y)) || (exit_x == player_x && exit_y == player_y)){
+                player_x = rand.nextInt(room_width);
+                player_y = rand.nextInt(room_width);
+            }
             for(int h = 0; h < room_height; h++){
                 for(int w = 0; w < room_width; w++){
 
@@ -104,6 +113,10 @@ public class Main {
                     else if (w == exit_x && h == exit_y) {
                         content = 'W';
                         System.out.print(content);
+                    }
+                    else if(w == player_x && h == player_y){
+                        content = 'G';
+                        System.out.println(content);
                     }
                     else {
                         content = 'P';
@@ -146,20 +159,33 @@ public class Main {
                 System.out.println("");
                 cellnum++;
             }
-            System.out.println("Wskaż koordynat x swojego celu");
-            user_xcoord = Integer.parseInt(scn.nextLine());
-            System.out.println("Wskaż koordynat y swojego celu");
-            user_ycoord = Integer.parseInt(scn.nextLine());
-            //wejście danych od użytkownika
-            RoomCell destination;
-            RoomCell player_start;
-            for(RoomCell cell: cells){
-                if(cell.xcoord == user_xcoord && cell.ycoord == user_ycoord){
-                    destination = cell;
-                }
+            System.out.println("Chcesz poruszać się ręcznie (przy użyciu strzałek - wpisz 1) czy automatycznie dojść do danego pola (wpisz 2)?");
+            int movement_mode = Integer.parseInt(scn.nextLine());
+            switch (movement_mode){
+                case 1:
+
+                    break;
+                case 2:
+                    System.out.println("Wskaż koordynat x swojego celu");
+                    user_xcoord = Integer.parseInt(scn.nextLine());
+                    System.out.println("Wskaż koordynat y swojego celu");
+                    user_ycoord = Integer.parseInt(scn.nextLine());
+                    //wejście danych od użytkownika
+                    RoomCell destination = new RoomCell('x', -99, -99);
+                    RoomCell player_start = new RoomCell('x', -99, -99);
+                    for(RoomCell cell: cells){
+                        if(cell.xcoord == user_xcoord && cell.ycoord == user_ycoord){
+                            destination = cell;
+                        }
+                        else if(cell.content == 'G') {
+                            player_start = cell;
+                        }
+                    }
+
+                    int distance = Dijkstra(player_start, destination);
+                    break;
             }
 
-            Dijkstra(player_start, destination);
             dangers_x.clear();
             dangers_y.clear();
             treasures_x.clear();
