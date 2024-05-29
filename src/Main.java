@@ -163,7 +163,23 @@ public class Main {
             int movement_mode = Integer.parseInt(scn.nextLine());
             switch (movement_mode){
                 case 1:
-
+                    System.out.println("Naciśnij strzałki na klawiaturze numerycznej, aby poruszyć postać.");
+                    int direction = Integer.parseInt(scn.nextLine());
+                    switch (direction){
+                        case 4:
+                            player_x--;
+                            break;
+                        case 8:
+                            player_y++;
+                            break;
+                        case 6:
+                            player_x++;
+                            break;
+                        case 2:
+                            player_y--;
+                            break;
+                    }
+                    break;
                     break;
                 case 2:
                     System.out.println("Wskaż koordynat x swojego celu");
