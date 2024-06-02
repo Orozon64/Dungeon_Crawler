@@ -21,15 +21,17 @@ public class Main {
     static int cellnum = 0;
     static int Dijkstra(RoomCell start, RoomCell finish){
         ArrayList <RoomCell> Q = cells;
-        ArrayList <RoomCell> path;
+        ArrayList <Integer> predecessors = new ArrayList<>();
+        int i = 0;
         for(RoomCell inf_setter : Q){
             if(inf_setter == start){
                 inf_setter.dis = 0;
             }
             else{
                 inf_setter.dis = Double.POSITIVE_INFINITY;
+                predecessors.set(i, -1);
             }
-
+            i++;
         }
         while (!Q.isEmpty()){
             RoomCell v = new RoomCell('X', -99, -99);
@@ -52,6 +54,8 @@ public class Main {
         return (int) finish.dis;
     }
     static void draw_map(){
+        System.out.println("Wysokość pokoju: " + room_height);
+        System.out.println("Szerokość pokoju " + room_width);
         cellnum = 1;
         for(int h = 0; h < room_height; h++){
             for(int w = 0; w < room_width; w++){
@@ -118,8 +122,8 @@ public class Main {
     }
     static void set_parameters(){
         Random rand = new Random();
-        room_width = rand.nextInt(8) + 2;
-        room_height = rand.nextInt(8) + 2;
+        room_width = rand.nextInt(3) + 2;
+        room_height = rand.nextInt(3) + 2;
         num_of_dangers = rand.nextInt(4); //Może ilość zagrożeń i skarbów powinna zależeć od rozmiaru komnaty?
         num_of_treasures = rand.nextInt(3);
         for(int d = 0; d < num_of_dangers; d++){
@@ -159,14 +163,14 @@ public class Main {
         Random rand = new Random();
         Scanner scn = new Scanner(System.in);
 
-        int num_of_rooms = rand.nextInt(10) + 2;
+        int num_of_rooms = rand.nextInt(10 - 2) + 2;
         int current_room = 1;
 
         System.out.println("Legenda: P = puste pole, Z = zagrożenie(pułapka, potwór), S=skarb, W=wyjście, G=gracz");
         for(int n = 0; n < num_of_rooms; n++){
             set_parameters();
             draw_map();
-            while (player_x != exit_x && player_y != exit_y){
+            while (player_x != exit_x || player_y != exit_y){
                 System.out.println("Chcesz poruszać się ręcznie (przy użyciu strzałek - wpisz 1) czy automatycznie dojść do danego pola (wpisz 2)?");
                 int movement_mode = Integer.parseInt(scn.nextLine());
                 switch (movement_mode){
@@ -178,13 +182,13 @@ public class Main {
                                 player_x--;
                                 break;
                             case 8:
-                                player_y++;
+                                player_y--;
                                 break;
                             case 6:
                                 player_x++;
                                 break;
                             case 2:
-                                player_y--;
+                                player_y++;
                                 break;
                             default:
                                 System.out.println("Proszę wprowadzić właściwą opcję");
