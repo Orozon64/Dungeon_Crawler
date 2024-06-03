@@ -19,9 +19,9 @@ public class Main {
     static ArrayList<Integer> treasures_x = new ArrayList<>();
     static ArrayList<Integer> treasures_y = new ArrayList<>();
     static int cellnum = 0;
-    static int Dijkstra(RoomCell start, RoomCell finish){
+    static ArrayList<RoomCell> Dijkstra(RoomCell start, RoomCell finish){
         ArrayList <RoomCell> Q = cells;
-        ArrayList <Integer> predecessors = new ArrayList<>();
+        ArrayList <RoomCell> path = new ArrayList<>();
         int i = 0;
         for(RoomCell inf_setter : Q){
             if(inf_setter == start){
@@ -29,7 +29,7 @@ public class Main {
             }
             else{
                 inf_setter.dis = Double.POSITIVE_INFINITY;
-                predecessors.set(i, -1);
+
             }
             i++;
         }
@@ -51,7 +51,27 @@ public class Main {
                 }
             }
         }
-        return (int) finish.dis;
+        path.add(finish);
+        double predecessor_distance = Double.POSITIVE_INFINITY;
+        RoomCell predecessor = null;
+        for (RoomEdge re: finish.edges){
+            if(re.cell_to_connect.dis < predecessor_distance){
+                predecessor_distance = re.cell_to_connect.dis;
+                predecessor = re.cell_to_connect;
+            }
+        }
+        path.add(predecessor);
+        while (predecessor != start){
+            for (RoomEdge re: predecessor.edges){
+                if(re.cell_to_connect.dis < predecessor_distance){
+                    predecessor_distance = re.cell_to_connect.dis;
+                    predecessor = re.cell_to_connect;
+                }
+            }
+            path.add(predecessor);
+        }
+
+        return path;
     }
     static void draw_map(){
         System.out.println("Wysokość pokoju: " + room_height);
@@ -213,7 +233,12 @@ public class Main {
                             }
                         }
 
-                        int distance = Dijkstra(player_start, destination);
+                        ArrayList<RoomCell> path = Dijkstra(player_start, destination);
+                        for(int i = path.size() - 1; i >= 0; i--){
+                            player_x = path.get(i).xcoord;
+                            player_y = path.get(i).ycoord;
+                            draw_map();
+                        }
                         break;
                 }
             }
