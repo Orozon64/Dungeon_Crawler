@@ -80,7 +80,11 @@ public class Main {
         for(int h = 0; h < room_height; h++){
             for(int w = 0; w < room_width; w++){
 
-                if(dangers_x.contains(w) && dangers_y.contains(h)){
+                if(w == player_x && h == player_y){
+                    content = 'G';
+                    System.out.print(content);
+                }
+                else if(dangers_x.contains(w) && dangers_y.contains(h)){
                     content = 'Z';
                     System.out.print(content);
                 }
@@ -94,10 +98,7 @@ public class Main {
                     content = 'W';
                     System.out.print(content);
                 }
-                else if(w == player_x && h == player_y){
-                    content = 'G';
-                    System.out.print(content);
-                }
+
                 else {
                     content = 'P';
                     System.out.print(content);
@@ -120,6 +121,8 @@ public class Main {
                         }
                         RoomEdge re = new RoomEdge(connection_cell, con_w);
                         rc.edges.add(re);
+                        RoomEdge undir_re = new RoomEdge(rc, con_w);
+                        connection_cell.edges.add(undir_re);
                     }
                     if(cellnum > room_width){
                         RoomCell connection_cell = cells.get(cellnum-room_width);
@@ -132,6 +135,8 @@ public class Main {
                         }
                         RoomEdge re = new RoomEdge(connection_cell, con_w);
                         rc.edges.add(re);
+                        RoomEdge undir_re = new RoomEdge(rc, con_w);
+                        connection_cell.edges.add(undir_re);
                     }
 
                 }
@@ -141,51 +146,56 @@ public class Main {
         }
     }
     static void set_parameters(){
+
         Random rand = new Random();
-        room_width = rand.nextInt(3) + 2;
-        room_height = rand.nextInt(3) + 2;
-        num_of_dangers = rand.nextInt(4); //Może ilość zagrożeń i skarbów powinna zależeć od rozmiaru komnaty?
-        num_of_treasures = rand.nextInt(3);
+        int room_dimensions_lower = 2;
+        int room_dimensions_upper = 5;
+        int room_dimensions_range = (room_dimensions_upper - room_dimensions_lower) + 1;
+        room_width = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
+        room_height = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
+        num_of_dangers = (int)(Math.random() * 4); //Może ilość zagrożeń i skarbów powinna zależeć od rozmiaru komnaty?
+        num_of_treasures = (int)(Math.random() * 3);
         for(int d = 0; d < num_of_dangers; d++){
-            int d_x = rand.nextInt(room_width);
-            int d_y = rand.nextInt(room_height);
+            int d_x = (int)(Math.random() * room_width);
+            int d_y = (int)(Math.random() * room_height);
             while((dangers_x.contains(d_x) && dangers_y.contains(d_y))){
-                d_x = rand.nextInt(room_width);
-                d_y = rand.nextInt(room_height);
+                d_x = (int)(Math.random() * room_width);
+                d_y = (int)(Math.random() * room_height);
             }
             dangers_x.add(d_x);
             dangers_y.add(d_y);
         }
         for(int t = 0; t < num_of_treasures; t++){
-            int t_x = rand.nextInt(room_width);
-            int t_y = rand.nextInt(room_height);
+            int t_x = (int)(Math.random() * room_width);
+            int t_y = (int)(Math.random() * room_height);
             while((treasures_x.contains(t_x) && treasures_y.contains(t_y)) || (dangers_x.contains(t_x) && dangers_y.contains(t_y))){
-                t_x = rand.nextInt(room_width);
-                t_y = rand.nextInt(room_height);
+                t_x = (int)(Math.random() * room_width);
+                t_y = (int)(Math.random() * room_height);
             }
             treasures_x.add(t_x);
             treasures_y.add(t_y);
         }
-        exit_x = rand.nextInt(room_width);
-        exit_y = rand.nextInt(room_height);
+        exit_x = (int)(Math.random() * room_width);
+        exit_y = (int)(Math.random() * room_height);
         while((treasures_x.contains(exit_x) && treasures_y.contains(exit_y)) || (dangers_x.contains(exit_x) && dangers_y.contains(exit_y))){
-            exit_x = rand.nextInt(room_width - 1) +1;
-            exit_y = rand.nextInt(room_height - 1) +1;
+            exit_x = (int)(Math.random() * room_width);
+            exit_y = (int)(Math.random() * room_height);
         }
-        player_x = rand.nextInt(room_width - 1) +1;
-        player_y = rand.nextInt(room_width - 1) + 1;
+        player_x = (int)(Math.random() * room_width);
+        player_y = (int)(Math.random() * room_height);
         while((treasures_x.contains(player_x) && treasures_y.contains(player_y)) || (dangers_x.contains(player_x) && dangers_y.contains(player_y)) || (exit_x == player_x && exit_y == player_y)){
-            player_x = rand.nextInt(room_width);
-            player_y = rand.nextInt(room_width);
+            player_x = (int)(Math.random() * room_width);
+            player_y = (int)(Math.random() * room_height);
         }
     }
     public static void main(String[] args) {
-        Random rand = new Random();
         Scanner scn = new Scanner(System.in);
-
-        int num_of_rooms = rand.nextInt(10 - 2) + 2;
+        int room_lower_bound = 3;
+        int room_upper_bound = 5;
+        int room_range = (room_upper_bound - room_lower_bound) + 1;
+        int num_of_rooms = (int)(Math.random() * room_range) + room_lower_bound;
         int current_room = 1;
-
+        System.out.println("Liczba pokoi w tym lochu: " + num_of_rooms);
         System.out.println("Legenda: P = puste pole, Z = zagrożenie(pułapka, potwór), S=skarb, W=wyjście, G=gracz");
         for(int n = 0; n < num_of_rooms; n++){
             set_parameters();
@@ -221,9 +231,8 @@ public class Main {
                         user_xcoord = Integer.parseInt(scn.nextLine());
                         System.out.println("Wskaż koordynat y swojego celu");
                         user_ycoord = Integer.parseInt(scn.nextLine());
-                        //wejście danych od użytkownika
-                        RoomCell destination = new RoomCell('x', -99, -99);
-                        RoomCell player_start = new RoomCell('x', -99, -99);
+                        RoomCell destination = null;
+                        RoomCell player_start = null;
                         for(RoomCell cell: cells){
                             if(cell.xcoord == user_xcoord && cell.ycoord == user_ycoord){
                                 destination = cell;
@@ -242,7 +251,7 @@ public class Main {
                         break;
                 }
             }
-
+            System.out.println("Dotarłeś do wyjścia!");
 
             dangers_x.clear();
             dangers_y.clear();
