@@ -34,32 +34,31 @@ public class Main {
             i++;
         }
         while (!Q.isEmpty()){
-            RoomCell v = new RoomCell('X', -99, -99);
-            int distance = 9999;
+            RoomCell v = Q.get(0);
             for(RoomCell ge: Q){ //szukamy wierzchołka o najmniejszej odległości
-                if(ge.dis < distance){
-                    distance = (int) ge.dis;
+                if(ge.dis < v.dis){
                     v = ge;
                 }
             }
             Q.remove(v);
             for(RoomEdge k : v.edges){
                 RoomCell u = k.cell_to_connect;
-                if(k.weight < u.dis){
+                if(k.weight + v.dis < u.dis){
                     u.dis = v.dis + k.weight;
                     u.previous = v;
                 }
             }
         }
         path.add(finish);
-        double predecessor_distance = Double.POSITIVE_INFINITY;
-        RoomCell predecessor = null;
+        double predecessor_distance = finish.edges.get(0).cell_to_connect.dis;
+        int index;
         for (RoomEdge re: finish.edges){
             if(re.cell_to_connect.dis < predecessor_distance){
                 predecessor_distance = re.cell_to_connect.dis;
-                predecessor = re.cell_to_connect;
+                index = finish.edges.indexOf(re);
             }
         }
+        RoomCell predecessor = finish.edges.get(index).cell_to_connect;
         path.add(predecessor);
         while (predecessor != start){
             for (RoomEdge re: predecessor.edges){
@@ -107,7 +106,7 @@ public class Main {
                 if(w < room_width -1){
                     System.out.print("-");
                 }
-                RoomCell rc = new RoomCell(content, w+1, h+1);
+                RoomCell rc = new RoomCell(content, w, h);
                 cells.add(rc);
                 if(cellnum != 0){ //jeśli nie jesteśmy na pierwszej komórce
                     if (w != 0){
