@@ -51,7 +51,7 @@ public class Main {
         }
         path.add(finish);
         double predecessor_distance = finish.edges.get(0).cell_to_connect.dis;
-        int index;
+        int index = 0;
         for (RoomEdge re: finish.edges){
             if(re.cell_to_connect.dis < predecessor_distance){
                 predecessor_distance = re.cell_to_connect.dis;
@@ -75,7 +75,7 @@ public class Main {
     static void draw_map(){
         System.out.println("Wysokość pokoju: " + room_height);
         System.out.println("Szerokość pokoju " + room_width);
-        cellnum = 1;
+        cellnum = 0;
         for(int h = 0; h < room_height; h++){
             for(int w = 0; w < room_width; w++){
 
@@ -123,7 +123,7 @@ public class Main {
                         RoomEdge undir_re = new RoomEdge(rc, con_w);
                         connection_cell.edges.add(undir_re);
                     }
-                    if(cellnum > room_width){
+                    if(h!=0){
                         RoomCell connection_cell = cells.get(cellnum-room_width);
                         int con_w;
                         if(connection_cell.content == 'Z'){
@@ -139,14 +139,14 @@ public class Main {
                     }
 
                 }
+                cellnum++;
             }
             System.out.println("");
-            cellnum++;
+
         }
     }
     static void set_parameters(){
 
-        Random rand = new Random();
         int room_dimensions_lower = 2;
         int room_dimensions_upper = 5;
         int room_dimensions_range = (room_dimensions_upper - room_dimensions_lower) + 1;
