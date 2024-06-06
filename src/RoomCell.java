@@ -11,4 +11,8 @@ public class RoomCell {
         xcoord = x;
         ycoord = y;
     }
+    RoomCell(int x, int y){
+        xcoord = x;
+        ycoord = y;
+    }
 }
