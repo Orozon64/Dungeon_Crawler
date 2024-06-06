@@ -73,8 +73,7 @@ public class Main {
         return path;
     }
     static void draw_map(){ //problem jest z tą funkcją
-        System.out.println("Wysokość pokoju: " + room_height); //gdy wydarza się problem, nie wypisuje się nawet to
-        System.out.println("Szerokość pokoju " + room_width);
+
         cellnum = 0;
         for(int h = 0; h < room_height; h++){
             for(int w = 0; w < room_width; w++){
@@ -146,45 +145,43 @@ public class Main {
     }
     static void set_parameters(){
         System.out.println("Ładowanie...");
-        int room_dimensions_lower = 3;
-        int room_dimensions_upper = 5;
+        int room_dimensions_lower = 10;
+        int room_dimensions_upper = 15;
         int room_dimensions_range = (room_dimensions_upper - room_dimensions_lower) + 1;
         room_width = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
         room_height = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
-        num_of_dangers = (int)(Math.random() * 4);
+        num_of_dangers = (int)(Math.random() * 50);
         num_of_treasures = (int)(Math.random() * 3);
-        for(int d = 0; d < num_of_dangers; d++){
-            int d_x = (int)(Math.random() * room_width);
-            int d_y = (int)(Math.random() * room_height);
-            while((dangers_x.contains(d_x) && dangers_y.contains(d_y))){
-                d_x = (int)(Math.random() * room_width);
-                d_y = (int)(Math.random() * room_height);
+        ArrayList<RoomCell> possible_coords = new ArrayList<>();
+        for(int h = 0; h < room_height; h++){
+            for (int w = 0; w < room_width; w++){
+                RoomCell rc = new RoomCell(w, h);
+                possible_coords.add(rc);
             }
-            dangers_x.add(d_x);
-            dangers_y.add(d_y);
+        }
+        for(int d = 0; d < num_of_dangers; d++){
+
+            int cell_index = (int)(Math.random() * possible_coords.size());
+            dangers_x.add(possible_coords.get(cell_index).xcoord);
+            dangers_y.add(possible_coords.get(cell_index).ycoord);
+            possible_coords.remove(cell_index);
         }
         for(int t = 0; t < num_of_treasures; t++){
-            int t_x = (int)(Math.random() * room_width);
-            int t_y = (int)(Math.random() * room_height);
-            while((treasures_x.contains(t_x) && treasures_y.contains(t_y)) || (dangers_x.contains(t_x) && dangers_y.contains(t_y))){
-                t_x = (int)(Math.random() * room_width);
-                t_y = (int)(Math.random() * room_height);
-            }
-            treasures_x.add(t_x);
-            treasures_y.add(t_y);
+            int cell_index = (int)(Math.random() * possible_coords.size());
+            treasures_x.add(possible_coords.get(cell_index).xcoord);
+            treasures_y.add(possible_coords.get(cell_index).ycoord);
+            possible_coords.remove(cell_index);
         }
-        exit_x = (int)(Math.random() * room_width);
-        exit_y = (int)(Math.random() * room_height);
-        while((treasures_x.contains(exit_x) && treasures_y.contains(exit_y)) || (dangers_x.contains(exit_x) && dangers_y.contains(exit_y))){
-            exit_x = (int)(Math.random() * room_width);
-            exit_y = (int)(Math.random() * room_height);
-        }
-        player_x = (int)(Math.random() * room_width);
+        int cell_index_exit = (int)(Math.random() * possible_coords.size());
+        exit_x = possible_coords.get(cell_index_exit).xcoord;
+        exit_y = possible_coords.get(cell_index_exit).ycoord;
+        possible_coords.remove(cell_index_exit);
+
+        int cell_index_player = (int)(Math.random() * possible_coords.size());
+        player_x = possible_coords.get(cell_index_player).xcoord;
         player_y = (int)(Math.random() * room_height);
-        while((treasures_x.contains(player_x) && treasures_y.contains(player_y)) || (dangers_x.contains(player_x) && dangers_y.contains(player_y)) || (exit_x == player_x && exit_y == player_y)){
-            player_x = (int)(Math.random() * room_width);
-            player_y = (int)(Math.random() * room_height);
-        }
+        System.out.println("Wysokość pokoju: " + room_height);
+        System.out.println("Szerokość pokoju " + room_width);
     }
     public static void main(String[] args) {
         Scanner scn = new Scanner(System.in);
@@ -226,10 +223,17 @@ public class Main {
                         break;
                     case 2:
                         boolean targets_self = false;
-                        System.out.println("Wskaż koordynat x swojego celu");
-                        user_xcoord = Integer.parseInt(scn.nextLine());
-                        System.out.println("Wskaż koordynat y swojego celu");
-                        user_ycoord = Integer.parseInt(scn.nextLine());
+
+                        do{
+                            System.out.println("Wskaż koordynat x swojego celu");
+                            user_xcoord = Integer.parseInt(scn.nextLine());
+                        }while(user_xcoord >= room_width || user_xcoord < 0);
+
+                        do{
+                            System.out.println("Wskaż koordynat y swojego celu");
+                            user_ycoord = Integer.parseInt(scn.nextLine());
+                        }while(user_ycoord >= room_height || user_ycoord < 0);
+
                         RoomCell destination = null;
                         RoomCell player_start = null;
                         for(RoomCell cell: cells){
@@ -253,8 +257,13 @@ public class Main {
                         }
                         else {
                             System.out.println("Już jesteś na tych koordynatach");
+                            draw_map();
                         }
 
+                        break;
+                    default:
+                        System.out.println("Podaj właściwą opcję");
+                        draw_map();
                         break;
                 }
             }
