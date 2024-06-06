@@ -22,7 +22,7 @@ public class Main {
     static ArrayList<RoomCell> Dijkstra(RoomCell start, RoomCell finish){
         ArrayList <RoomCell> Q = cells;
         ArrayList <RoomCell> path = new ArrayList<>();
-        int i = 0;
+
         for(RoomCell inf_setter : Q){
             if(inf_setter == start){
                 inf_setter.dis = 0;
@@ -31,7 +31,7 @@ public class Main {
                 inf_setter.dis = Double.POSITIVE_INFINITY;
 
             }
-            i++;
+
         }
         while (!Q.isEmpty()){
             RoomCell v = Q.get(0);
@@ -72,8 +72,8 @@ public class Main {
 
         return path;
     }
-    static void draw_map(){
-        System.out.println("Wysokość pokoju: " + room_height);
+    static void draw_map(){ //problem jest z tą funkcją
+        System.out.println("Wysokość pokoju: " + room_height); //gdy wydarza się problem, nie wypisuje się nawet to
         System.out.println("Szerokość pokoju " + room_width);
         cellnum = 0;
         for(int h = 0; h < room_height; h++){
@@ -97,7 +97,6 @@ public class Main {
                     content = 'W';
                     System.out.print(content);
                 }
-
                 else {
                     content = 'P';
                     System.out.print(content);
@@ -146,13 +145,13 @@ public class Main {
         }
     }
     static void set_parameters(){
-
-        int room_dimensions_lower = 2;
+        System.out.println("Ładowanie...");
+        int room_dimensions_lower = 3;
         int room_dimensions_upper = 5;
         int room_dimensions_range = (room_dimensions_upper - room_dimensions_lower) + 1;
         room_width = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
         room_height = (int)(Math.random() * room_dimensions_range) + room_dimensions_lower;
-        num_of_dangers = (int)(Math.random() * 4); //Może ilość zagrożeń i skarbów powinna zależeć od rozmiaru komnaty?
+        num_of_dangers = (int)(Math.random() * 4);
         num_of_treasures = (int)(Math.random() * 3);
         for(int d = 0; d < num_of_dangers; d++){
             int d_x = (int)(Math.random() * room_width);
@@ -226,6 +225,7 @@ public class Main {
                         draw_map();
                         break;
                     case 2:
+                        boolean targets_self = false;
                         System.out.println("Wskaż koordynat x swojego celu");
                         user_xcoord = Integer.parseInt(scn.nextLine());
                         System.out.println("Wskaż koordynat y swojego celu");
@@ -235,18 +235,26 @@ public class Main {
                         for(RoomCell cell: cells){
                             if(cell.xcoord == user_xcoord && cell.ycoord == user_ycoord){
                                 destination = cell;
+                                if(cell.content == 'G'){
+                                    targets_self = true;
+                                }
                             }
                             else if(cell.content == 'G') {
                                 player_start = cell;
                             }
                         }
-
-                        ArrayList<RoomCell> path = Dijkstra(player_start, destination);
-                        for(int i = path.size() - 1; i >= 0; i--){
-                            player_x = path.get(i).xcoord;
-                            player_y = path.get(i).ycoord;
-                            draw_map();
+                        if(!targets_self){
+                            ArrayList<RoomCell> path = Dijkstra(player_start, destination);
+                            for(int i = path.size() - 1; i >= 0; i--){
+                                player_x = path.get(i).xcoord;
+                                player_y = path.get(i).ycoord;
+                                draw_map();
+                            }
                         }
+                        else {
+                            System.out.println("Już jesteś na tych koordynatach");
+                        }
+
                         break;
                 }
             }
@@ -258,8 +266,12 @@ public class Main {
             treasures_y.clear();
             cells.clear();
             current_room++;
+
             if(current_room > num_of_rooms){
                 System.out.println("Gratulacje - to koniec lochu!");
+            }
+            else{
+                System.out.println("Wchodzisz do pokoju nr " + current_room);
             }
         }
 
