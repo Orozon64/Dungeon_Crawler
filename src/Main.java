@@ -1,6 +1,7 @@
 import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
+
 public class Main {
     static ArrayList<RoomCell> cells = new ArrayList<>();
     static int room_width;
@@ -14,6 +15,10 @@ public class Main {
     static int exit_y;
     static int player_x;
     static int player_y;
+
+    static int monster_x;
+
+    static int monster_y;
     static ArrayList<Integer> dangers_x = new ArrayList<>();
     static ArrayList<Integer> dangers_y = new ArrayList<>();
     static ArrayList<Integer> treasures_x = new ArrayList<>();
@@ -22,57 +27,61 @@ public class Main {
     static ArrayList<RoomCell> Dijkstra(RoomCell start, RoomCell finish){
         ArrayList <RoomCell> Q = cells;
         ArrayList <RoomCell> path = new ArrayList<>();
+        if(start != finish){
 
-        for(RoomCell inf_setter : Q){
-            if(inf_setter == start){
-                inf_setter.dis = 0;
+
+            for(RoomCell inf_setter : Q){
+                if(inf_setter == start){
+                    inf_setter.dis = 0;
+                }
+                else{
+                    inf_setter.dis = Double.POSITIVE_INFINITY;
+
+                }
+
             }
-            else{
-                inf_setter.dis = Double.POSITIVE_INFINITY;
-
-            }
-
-        }
-        while (!Q.isEmpty()){
-            RoomCell v = Q.get(0);
-            for(RoomCell ge: Q){ //szukamy wierzchołka o najmniejszej odległości
-                if(ge.dis < v.dis){
-                    v = ge;
+            while (!Q.isEmpty()){
+                RoomCell v = Q.get(0);
+                for(RoomCell ge: Q){ //szukamy wierzchołka o najmniejszej odległości
+                    if(ge.dis < v.dis){
+                        v = ge;
+                    }
+                }
+                Q.remove(v);
+                for(RoomEdge k : v.edges){
+                    RoomCell u = k.cell_to_connect;
+                    if(k.weight + v.dis < u.dis){
+                        u.dis = v.dis + k.weight;
+                        u.previous = v;
+                    }
                 }
             }
-            Q.remove(v);
-            for(RoomEdge k : v.edges){
-                RoomCell u = k.cell_to_connect;
-                if(k.weight + v.dis < u.dis){
-                    u.dis = v.dis + k.weight;
-                    u.previous = v;
-                }
-            }
-        }
-        path.add(finish);
-        double predecessor_distance = finish.edges.get(0).cell_to_connect.dis;
-        int index = 0;
-        for (RoomEdge re: finish.edges){
-            if(re.cell_to_connect.dis < predecessor_distance){
-                predecessor_distance = re.cell_to_connect.dis;
-                index = finish.edges.indexOf(re);
-            }
-        }
-        RoomCell predecessor = finish.edges.get(index).cell_to_connect;
-        path.add(predecessor);
-        while (predecessor != start){
-            for (RoomEdge re: predecessor.edges){
+            path.add(finish);
+            double predecessor_distance = finish.edges.get(0).cell_to_connect.dis;
+            int index = 0;
+            for (RoomEdge re: finish.edges){
                 if(re.cell_to_connect.dis < predecessor_distance){
                     predecessor_distance = re.cell_to_connect.dis;
-                    predecessor = re.cell_to_connect;
+                    index = finish.edges.indexOf(re);
                 }
             }
+            RoomCell predecessor = finish.edges.get(index).cell_to_connect;
             path.add(predecessor);
+            while (predecessor != start){
+                for (RoomEdge re: predecessor.edges){
+                    if(re.cell_to_connect.dis < predecessor_distance){
+                        predecessor_distance = re.cell_to_connect.dis;
+                        predecessor = re.cell_to_connect;
+                    }
+                }
+                path.add(predecessor);
+            }
         }
+
 
         return path;
     }
-    static void draw_map(){ //problem jest z tą funkcją
+    static void draw_map(){
 
         cellnum = 0;
         for(int h = 0; h < room_height; h++){
@@ -82,7 +91,10 @@ public class Main {
                     content = 'G';
                     System.out.print(content);
                 }
-                else if(dangers_x.contains(w) && dangers_y.contains(h)){
+                else if (w == monster_x && h == player_y) {
+                    content = 'B';
+                    System.out.print(content);
+                } else if(dangers_x.contains(w) && dangers_y.contains(h)){
                     content = 'Z';
                     System.out.print(content);
                 }
@@ -142,6 +154,17 @@ public class Main {
             System.out.println("");
 
         }
+        RoomCell player_location = null;
+        RoomCell monster_location = null;
+        for(RoomCell cell: cells){
+            if(cell.content == 'B'){
+                player_location = cell;
+            }
+            else if(cell.content == 'G') {
+                monster_location = cell;
+            }
+        }
+        ArrayList<RoomCell> monster_path =  Dijkstra(monster_location, player_location);
     }
     static void set_parameters(){
         System.out.println("Ładowanie...");
@@ -179,7 +202,13 @@ public class Main {
 
         int cell_index_player = (int)(Math.random() * possible_coords.size());
         player_x = possible_coords.get(cell_index_player).xcoord;
-        player_y = (int)(Math.random() * room_height);
+        player_y = possible_coords.get(cell_index_player).ycoord;
+        possible_coords.remove(cell_index_player);
+
+        int cell_index_monster = (int)(Math.random() * possible_coords.size());
+        monster_x = possible_coords.get(cell_index_monster).xcoord;
+        monster_y = possible_coords.get(cell_index_monster).ycoord;
+
         System.out.println("Wysokość pokoju: " + room_height);
         System.out.println("Szerokość pokoju " + room_width);
     }
@@ -191,13 +220,19 @@ public class Main {
         int num_of_rooms = (int)(Math.random() * room_range) + room_lower_bound;
         int current_room = 1;
         System.out.println("Liczba pokoi w tym lochu: " + num_of_rooms);
-        System.out.println("Legenda: P = puste pole, Z = zagrożenie(pułapka, potwór), S=skarb, W=wyjście, G=gracz");
+        System.out.println("Legenda: P = puste pole, Z = zagrożenie, S=skarb, W=wyjście, G=gracz, B=Bestia");
         for(int n = 0; n < num_of_rooms; n++){
             set_parameters();
             draw_map();
+
             while (player_x != exit_x || player_y != exit_y){
                 System.out.println("Chcesz poruszać się ręcznie (przy użyciu strzałek - wpisz 1) czy automatycznie dojść do danego pola (wpisz 2)?");
                 int movement_mode = Integer.parseInt(scn.nextLine());
+                //Thread.sleep(4000);
+                if(player_y == monster_y && player_x == monster_x){
+                    System.out.println("Bestia cię dorwała - koniec gry!");
+                    System.exit(0);
+                }
                 switch (movement_mode){
                     case 1:
                         System.out.println("Naciśnij strzałki na klawiaturze numerycznej, aby poruszyć postać.");
