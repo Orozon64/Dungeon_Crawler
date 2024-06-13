@@ -19,6 +19,8 @@ public class Main {
     static int monster_x;
 
     static int monster_y;
+
+    static ArrayList<RoomCell> dangers = new ArrayList<>();
     static ArrayList<Integer> dangers_x = new ArrayList<>();
     static ArrayList<Integer> dangers_y = new ArrayList<>();
     static ArrayList<Integer> treasures_x = new ArrayList<>();
@@ -82,11 +84,28 @@ public class Main {
         return path;
     }
     static void draw_map(){
+        if(!cells.isEmpty()){
+            RoomCell player_location = null;
+            RoomCell monster_location = null;
+            for(RoomCell cell: cells){
+                if(cell.content == 'B'){
+                    monster_location = cell;
+                }
+                else if(cell.content == 'G') {
+                    player_location = cell;
+                }
+            }
+
+            ArrayList<RoomCell> monster_path =  Dijkstra(monster_location, player_location);
+            RoomCell step_one = monster_path.get(monster_path.size() -1);
+            monster_x = step_one.xcoord;
+            monster_y = step_one.ycoord;
+        }
 
         cellnum = 0;
         for(int h = 0; h < room_height; h++){
             for(int w = 0; w < room_width; w++){
-
+                RoomCell current_cell = new RoomCell(w, h);
                 if(w == player_x && h == player_y){
                     content = 'G';
                     System.out.print(content);
@@ -94,7 +113,7 @@ public class Main {
                 else if (w == monster_x && h == player_y) {
                     content = 'B';
                     System.out.print(content);
-                } else if(dangers_x.contains(w) && dangers_y.contains(h)){
+                } else if(dangers.contains(current_cell)){ //sprawdzamy czy lista "dangers" zawiera komórkę o takich x i y
                     content = 'Z';
                     System.out.print(content);
                 }
@@ -135,9 +154,12 @@ public class Main {
                     }
                     if(h!=0){
                         RoomCell connection_cell = cells.get(cellnum-room_width);
-                        int con_w;
+                        double con_w;
                         if(connection_cell.content == 'Z'){
                             con_w = 99;
+                        }
+                        else if (connection_cell.content == 'B') {
+                            con_w = Double.POSITIVE_INFINITY;
                         }
                         else {
                             con_w = 1;
@@ -151,20 +173,11 @@ public class Main {
                 }
                 cellnum++;
             }
-            System.out.println("");
+            System.out.println();
 
         }
-        RoomCell player_location = null;
-        RoomCell monster_location = null;
-        for(RoomCell cell: cells){
-            if(cell.content == 'B'){
-                player_location = cell;
-            }
-            else if(cell.content == 'G') {
-                monster_location = cell;
-            }
-        }
-        ArrayList<RoomCell> monster_path =  Dijkstra(monster_location, player_location);
+
+
     }
     static void set_parameters(){
         System.out.println("Ładowanie...");
@@ -185,27 +198,33 @@ public class Main {
         for(int d = 0; d < num_of_dangers; d++){
 
             int cell_index = (int)(Math.random() * possible_coords.size());
+            RoomCell dc = new RoomCell(possible_coords.get(cell_index).xcoord, possible_coords.get(cell_index).ycoord);
+            dangers.add(dc);
             dangers_x.add(possible_coords.get(cell_index).xcoord);
             dangers_y.add(possible_coords.get(cell_index).ycoord);
             possible_coords.remove(cell_index);
         }
         for(int t = 0; t < num_of_treasures; t++){
             int cell_index = (int)(Math.random() * possible_coords.size());
+            RoomCell tc = new RoomCell(possible_coords.get(cell_index).xcoord, possible_coords.get(cell_index).ycoord);
             treasures_x.add(possible_coords.get(cell_index).xcoord);
             treasures_y.add(possible_coords.get(cell_index).ycoord);
             possible_coords.remove(cell_index);
         }
         int cell_index_exit = (int)(Math.random() * possible_coords.size());
+        RoomCell ec = new RoomCell(possible_coords.get(cell_index_exit).xcoord, possible_coords.get(cell_index_exit).ycoord);
         exit_x = possible_coords.get(cell_index_exit).xcoord;
         exit_y = possible_coords.get(cell_index_exit).ycoord;
         possible_coords.remove(cell_index_exit);
 
         int cell_index_player = (int)(Math.random() * possible_coords.size());
+        RoomCell pc = new RoomCell(possible_coords.get(cell_index_player).xcoord, possible_coords.get(cell_index_player).ycoord);
         player_x = possible_coords.get(cell_index_player).xcoord;
         player_y = possible_coords.get(cell_index_player).ycoord;
         possible_coords.remove(cell_index_player);
 
         int cell_index_monster = (int)(Math.random() * possible_coords.size());
+        RoomCell mc = new RoomCell(possible_coords.get(cell_index_monster).xcoord, possible_coords.get(cell_index_monster).ycoord);
         monster_x = possible_coords.get(cell_index_monster).xcoord;
         monster_y = possible_coords.get(cell_index_monster).ycoord;
 
@@ -228,7 +247,6 @@ public class Main {
             while (player_x != exit_x || player_y != exit_y){
                 System.out.println("Chcesz poruszać się ręcznie (przy użyciu strzałek - wpisz 1) czy automatycznie dojść do danego pola (wpisz 2)?");
                 int movement_mode = Integer.parseInt(scn.nextLine());
-                //Thread.sleep(4000);
                 if(player_y == monster_y && player_x == monster_x){
                     System.out.println("Bestia cię dorwała - koniec gry!");
                     System.exit(0);
